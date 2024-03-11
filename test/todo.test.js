@@ -1,19 +1,16 @@
 import request from 'supertest';
-import { app } from '../src/app.js';
+import { app, todoToResponseData } from '../src/app.js';
 import { assert, describe, it } from 'vitest';
 import { getTodos } from '../src/todos.js';
 
-const req = request(app);
+describe.sequential('/todos', () => {
+  const req = request(app);
 
-describe('GET /todos', () => {
-  it('responds with json', async () => {
+  it('GET /todos', async () => {
     const res = await req.get('/todos');
     assert.match(res.headers['content-type'], /json/);
     assert.strictEqual(res.statusCode, 200);
-  });
 
-  it('responds with correct payload', async () => {
-    const res = await req.get('/todos');
     const payload = {
       data: getTodos().map(({ id, title }) => ({
         type: 'todos',
@@ -23,30 +20,37 @@ describe('GET /todos', () => {
     };
     assert.deepStrictEqual(res.body, payload);
   });
-});
 
-describe('POST /todos', async () => {
-  const title = 'test123';
-  const res = await req.post('/todos').send({ title });
+  it('POST /todos', async () => {
+    const title = 'test123';
+    const res = await req.post('/todos').send({ title });
 
-  it('responds with json', () => {
     assert.match(res.headers['content-type'], /json/);
     assert.strictEqual(res.statusCode, 201);
-  });
 
-  it('responds with correct payload', () => {
     assert.isObject(res.body.data);
     const { data } = res.body;
     assert.typeOf(data.id, 'string');
     assert.strictEqual(data.attributes.title, title);
   });
-});
 
-describe('DELETE /todos', async () => {
-  const { id } = getTodos().at(-1);
-  const res = await req.delete(`/todos/${id}`);
+  it('PUT /todos', async () => {
+    const { id } = getTodos().at(-1);
+    const title = 'changed';
+    const res = await req.put(`/todos/${id}`).send({ title });
 
-  it('responds with 204 status code', () => {
+    assert.match(res.headers['content-type'], /json/);
+    assert.strictEqual(res.statusCode, 200);
+
+    const todo = getTodos().find((todo) => todo.id === id);
+    const data = todoToResponseData(todo);
+    assert.deepStrictEqual(res.body, { data });
+  });
+
+  it('DELETE /todos', async () => {
+    const { id } = getTodos().at(-1);
+    const res = await req.delete(`/todos/${id}`);
+
     assert.strictEqual(res.statusCode, 204);
   });
 });

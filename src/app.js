@@ -1,5 +1,11 @@
 import express from 'express';
-import { addTodo, getTodos, isTodoFound, removeTodo } from './todos.js';
+import {
+  addTodo,
+  getTodos,
+  isTodoFound,
+  removeTodo,
+  setTodos,
+} from './todos.js';
 import { body, param } from 'express-validator';
 
 export const app = express();
@@ -18,6 +24,22 @@ app.post('/todos', body('title').isString().notEmpty(), (req, res) => {
   res.status(201).send({ data });
 });
 
+app.put(
+  '/todos/:id',
+  param('id').isString().custom(isTodoFound),
+  body('title').isString().notEmpty(),
+  (req, res) => {
+    const { id } = req.params;
+    const { title } = req.body;
+    const newTodos = getTodos().map((todo) =>
+      todo.id !== id ? todo : { id, title }
+    );
+    setTodos(newTodos);
+    const data = todoToResponseData({ id, title });
+    res.send({ data });
+  }
+);
+
 app.delete(
   '/todos/:id',
   param('id').isString().custom(isTodoFound),
@@ -28,7 +50,7 @@ app.delete(
   }
 );
 
-function todoToResponseData({ id, title }) {
+export function todoToResponseData({ id, title }) {
   return {
     type: 'todos',
     id,

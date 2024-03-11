@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-const todos = [
+let todos = [
   {
     id: uuidv4(),
     title: 'Catch the python',
@@ -22,6 +22,10 @@ export function removeTodo(id) {
 
 export function getTodos() {
   return todos;
+}
+
+export function setTodos(newTodos) {
+  todos = [...newTodos];
 }
 
 export function isTodoFound(id) {
