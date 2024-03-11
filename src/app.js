@@ -7,10 +7,12 @@ import {
   setTodos,
 } from './todos.js';
 import { body, param } from 'express-validator';
+import cors from 'cors';
 
 export const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.get('/todos', (req, res) => {
   const data = getTodos().map((todo) => todoToResponseData(todo));
