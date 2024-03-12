@@ -17,7 +17,7 @@ export function addTodo(title) {
 }
 
 export function removeTodo(id) {
-  todos.splice(todos.findIndex((todo) => todo.id === id));
+  todos.splice(todos.findIndex((todo) => todo.id === id), 1);
 }
 
 export function getTodos() {
